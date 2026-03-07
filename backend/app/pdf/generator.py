@@ -247,15 +247,15 @@ def _draw_section_a(
     """Draw Type 1 bubble grid in 3 columns. Returns the y_mm below the last row."""
     import math
 
+    if not type1_questions:
+        return SECTION_A_TOP_MM
+
     c.setFont("Helvetica-Bold", 10)
     c.drawString(
         _mm_to_pt(SECTION_A_LEFT_MM),
         _y(SECTION_A_TOP_MM - 6),
         "SECTION A — Single Best Answer (circle ONE option per question)",
     )
-
-    if not type1_questions:
-        return SECTION_A_TOP_MM + 10
 
     questions_per_col = math.ceil(len(type1_questions) / 3)
     col_starts = [SECTION_A_LEFT_MM, SECTION_A_COL2_LEFT_MM, SECTION_A_COL3_LEFT_MM]

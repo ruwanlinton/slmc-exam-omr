@@ -2,6 +2,7 @@ import os
 import uuid
 from typing import List
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, BackgroundTasks, Query
+from fastapi.responses import FileResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
@@ -148,6 +149,29 @@ async def get_submission(
     if not sub:
         raise HTTPException(status_code=404, detail="Submission not found")
     return sub
+
+
+@router.get("/exams/{exam_id}/submissions/{submission_id}/image")
+async def get_submission_image(
+    exam_id: str,
+    submission_id: str,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Download the original scanned image for a submission."""
+    result = await db.execute(
+        select(Submission).where(
+            Submission.id == submission_id, Submission.exam_id == exam_id
+        )
+    )
+    sub = result.scalar_one_or_none()
+    if not sub:
+        raise HTTPException(status_code=404, detail="Submission not found")
+    if not sub.image_path or not os.path.exists(sub.image_path):
+        raise HTTPException(status_code=404, detail="Image not available")
+
+    filename = f"sheet_{sub.index_number or submission_id[:8]}.jpg"
+    return FileResponse(sub.image_path, media_type="image/jpeg", filename=filename)
 
 
 @router.post("/exams/{exam_id}/submissions/{submission_id}/reprocess", response_model=SubmissionOut)

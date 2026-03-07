@@ -8,6 +8,7 @@ export function SubmissionsPage() {
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [loading, setLoading] = useState(true);
   const [reprocessing, setReprocessing] = useState<string | null>(null);
+  const [downloading, setDownloading] = useState<string | null>(null);
 
   useEffect(() => {
     if (!id) return;
@@ -16,6 +17,22 @@ export function SubmissionsPage() {
       setLoading(false);
     });
   }, [id]);
+
+  const handleDownload = async (sub: Submission) => {
+    if (!id) return;
+    setDownloading(sub.id);
+    try {
+      const res = await submissionsApi.downloadImage(id, sub.id);
+      const url = URL.createObjectURL(new Blob([res.data], { type: "image/jpeg" }));
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `sheet_${sub.index_number || sub.id.slice(0, 8)}.jpg`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } finally {
+      setDownloading(null);
+    }
+  };
 
   const handleReprocess = async (submissionId: string) => {
     if (!id) return;
@@ -76,7 +93,15 @@ export function SubmissionsPage() {
                   <span style={styles.errText}>{sub.error_message || "—"}</span>
                 </td>
                 <td style={styles.td}>{new Date(sub.created_at).toLocaleString()}</td>
-                <td style={styles.td}>
+                <td style={{ ...styles.td, display: "flex", gap: 6, alignItems: "center" }}>
+                  <button
+                    onClick={() => handleDownload(sub)}
+                    disabled={downloading === sub.id}
+                    style={styles.downloadBtn}
+                    title="Download scanned sheet"
+                  >
+                    {downloading === sub.id ? "..." : "Download"}
+                  </button>
                   {sub.status === "error" && (
                     <button
                       onClick={() => handleReprocess(sub.id)}
@@ -125,5 +150,6 @@ const styles: Record<string, React.CSSProperties> = {
   td: { padding: "10px 12px", fontSize: 13, color: "#2d3748" },
   badge: { padding: "2px 8px", borderRadius: 99, fontSize: 11, fontWeight: 700 },
   errText: { display: "block", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", color: "#c53030", maxWidth: 200 },
+  downloadBtn: { padding: "4px 12px", background: "#f0fff4", color: "#276749", border: "none", borderRadius: 4, cursor: "pointer", fontSize: 12 },
   reprocessBtn: { padding: "4px 12px", background: "#ebf8ff", color: "#2b6cb0", border: "none", borderRadius: 4, cursor: "pointer", fontSize: 12 },
 };

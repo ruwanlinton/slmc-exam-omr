@@ -52,4 +52,7 @@ export const submissionsApi = {
     apiClient.post<Submission>(
       `/exams/${examId}/submissions/${submissionId}/reprocess`
     ),
+
+  downloadImage: (examId: string, submissionId: string) =>
+    apiClient.get(`/exams/${examId}/submissions/${submissionId}/image`, { responseType: "blob" }),
 };

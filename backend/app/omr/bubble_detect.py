@@ -148,6 +148,7 @@ def detect_type2_answers(
 def detect_digit_grid(
     img_gray: np.ndarray,
     fill_threshold: float = 0.50,
+    n_digits: int = ID_GRID_DIGIT_COUNT,
 ) -> Optional[str]:
     """
     Detect filled bubbles in the ID digit bubble grid.
@@ -155,9 +156,10 @@ def detect_digit_grid(
     any column has no filled bubble (ambiguous / unreadable).
     """
     r_px = mm_to_px(ID_GRID_BUBBLE_DIAMETER_MM / 2)
+    n_digits = min(max(n_digits, 1), 10)
     digits = []
 
-    for col in range(ID_GRID_DIGIT_COUNT):
+    for col in range(n_digits):
         cx_mm = ID_GRID_LEFT_MM + ID_GRID_LABEL_W_MM + ID_GRID_LABEL_GAP_MM + col * ID_GRID_CELL_W_MM
         cx_px = mm_to_px(cx_mm)
 

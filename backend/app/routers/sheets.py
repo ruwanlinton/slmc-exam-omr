@@ -18,6 +18,7 @@ router = APIRouter()
 async def generate_sheets(
     exam_id: str,
     id_mode: str = Query("qr", description="'qr' | 'bubble_grid' | 'both'"),
+    digit_count: int = Query(8, ge=1, le=10, description="Number of digit columns in bubble grid (1–10, bubble_grid mode only)"),
     csv_file: Optional[UploadFile] = File(None),
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
@@ -72,6 +73,7 @@ async def generate_sheets(
         type1_questions=type1,
         type2_questions=type2,
         id_mode=id_mode,
+        digit_count=digit_count,
     )
 
     filename = f"omr_sheets_{exam_id[:8]}.pdf"

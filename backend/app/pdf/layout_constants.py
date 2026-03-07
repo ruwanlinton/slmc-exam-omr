@@ -28,12 +28,10 @@ ALIGN_MARKS_MM = {
                      PAGE_H_MM - ALIGN_MARK_INSET_MM - ALIGN_MARK_SIZE_MM),
 }
 
-# --- QR Code (30x30mm centered at top) ---
+# --- QR Code (30x30mm, right side of header — same column as digit grid) ---
 QR_SIZE_MM = 30.0
-QR_TOP_MM = 25.0  # top edge of QR code from page top
-QR_LEFT_MM = (PAGE_W_MM - QR_SIZE_MM) / 2.0  # centered (used in "qr" mode)
-QR_LEFT_MM_BOTH = 25.0   # shifted left when id_mode=="both"
-QR_TOP_MM_BOTH = 22.0
+QR_TOP_MM = 20.0    # top edge of QR code (aligned with ID_GRID_TOP_MM)
+QR_LEFT_MM = 138.0  # left edge of QR code (right pane, same area as digit grid)
 
 # --- ID Digit Bubble Grid ---
 # A 10-row (digits 0-9) × N-column (digit positions) bubble grid.

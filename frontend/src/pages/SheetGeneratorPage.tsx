@@ -14,17 +14,13 @@ const ID_MODES = [
     label: "Digit Bubble Grid only",
     desc: "A single blank template is generated. Candidates fill in their numeric index number (up to 8 digits) by bubbling each digit. No CSV required.",
   },
-  {
-    value: "both",
-    label: "QR Code + Digit Bubble Grid",
-    desc: "Each sheet has a QR code (left) and a digit bubble grid (right). During scanning the QR code is used first; the bubble grid is used as a fallback.",
-  },
 ];
 
 export function SheetGeneratorPage() {
   const { id } = useParams<{ id: string }>();
   const [idMode, setIdMode] = useState("qr");
   const [csvFile, setCsvFile] = useState<File | null>(null);
+  const [digitCount, setDigitCount] = useState(8);
   const [generating, setGenerating] = useState(false);
   const [error, setError] = useState("");
 
@@ -36,7 +32,7 @@ export function SheetGeneratorPage() {
     setGenerating(true);
     setError("");
     try {
-      const res = await examsApi.generateSheets(id, idMode, csvFile ?? undefined);
+      const res = await examsApi.generateSheets(id, idMode, csvFile ?? undefined, digitCount);
       const url = URL.createObjectURL(new Blob([res.data], { type: "application/pdf" }));
       const a = document.createElement("a");
       a.href = url;
@@ -119,12 +115,28 @@ export function SheetGeneratorPage() {
           </div>
         )}
 
-        {/* Bubble grid info */}
+        {/* Bubble grid options */}
         {idMode === "bubble_grid" && (
           <div style={styles.infoBox}>
-            A single blank template sheet will be generated. Print as many copies as needed.
-            Candidates must fill in each digit of their <strong>numeric</strong> index number
-            (up to 8 digits, zero-padded from the left — e.g. index number 1234 → fill 00001234).
+            <div style={{ marginBottom: 10 }}>
+              A single blank template sheet will be generated. Print as many copies as needed.
+              Candidates must fill in each digit of their <strong>numeric</strong> index number,
+              zero-padded from the left (e.g. index number 1234 with 8 digits → fill 00001234).
+            </div>
+            <label style={styles.digitLabel}>
+              Number of digit columns
+              <div style={styles.digitRow}>
+                <input
+                  type="number"
+                  min={1}
+                  max={10}
+                  value={digitCount}
+                  onChange={(e) => setDigitCount(Math.min(10, Math.max(1, Number(e.target.value))))}
+                  style={styles.digitInput}
+                />
+                <span style={styles.digitHint}>1 – 10 digits</span>
+              </div>
+            </label>
           </div>
         )}
 
@@ -162,6 +174,10 @@ const styles: Record<string, React.CSSProperties> = {
   fileInput: { marginTop: 4 },
   fileInfo: { fontSize: 13, color: "#718096" },
   infoBox: { background: "#fffbeb", border: "1px solid #f6d860", borderRadius: 6, padding: "12px 16px", fontSize: 13, color: "#744210", lineHeight: 1.6 },
+  digitLabel: { display: "flex", flexDirection: "column" as const, gap: 6, fontWeight: 600, fontSize: 13 },
+  digitRow: { display: "flex", alignItems: "center", gap: 10 },
+  digitInput: { width: 64, padding: "4px 8px", border: "1px solid #d69e2e", borderRadius: 4, fontSize: 14, textAlign: "center" as const },
+  digitHint: { fontSize: 12, color: "#92400e" },
   error: { background: "#fff5f5", border: "1px solid #fc8181", color: "#c53030", padding: "10px 14px", borderRadius: 6, fontSize: 13 },
   btn: { padding: "10px 24px", background: "#233654", color: "#fff", border: "none", borderRadius: 6, fontSize: 14, fontWeight: 600, cursor: "pointer", alignSelf: "flex-start" },
   btnDisabled: { background: "#a0aec0", cursor: "not-allowed" },

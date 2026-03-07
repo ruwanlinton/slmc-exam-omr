@@ -15,7 +15,7 @@ from PIL import Image
 
 from .layout_constants import (
     ALIGN_MARK_SIZE_MM, ALIGN_MARKS_MM,
-    QR_SIZE_MM, QR_TOP_MM, QR_LEFT_MM, QR_LEFT_MM_BOTH, QR_TOP_MM_BOTH,
+    QR_SIZE_MM, QR_TOP_MM, QR_LEFT_MM,
     HEADER_TOP_MM, HEADER_LEFT_MM, HEADER_RIGHT_MM,
     BUBBLE_DIAMETER_MM, BUBBLE_SPACING_MM,
     SECTION_A_TOP_MM, SECTION_A_LEFT_MM, SECTION_A_COL2_LEFT_MM, SECTION_A_COL3_LEFT_MM, SECTION_A_ROW_HEIGHT_MM,
@@ -62,7 +62,7 @@ def _draw_alignment_marks(c: canvas.Canvas) -> None:
         c.rect(x_pt, y_pt, w_pt, h_pt, stroke=0, fill=1)
 
 
-def _draw_qr(c: canvas.Canvas, exam_id: str, index_number: str, shifted: bool = False) -> None:
+def _draw_qr(c: canvas.Canvas, exam_id: str, index_number: str) -> None:
     data = {"exam_id": exam_id, "index_number": index_number}
     img = _generate_qr_image(data)
 
@@ -70,23 +70,19 @@ def _draw_qr(c: canvas.Canvas, exam_id: str, index_number: str, shifted: bool = 
     img.save(buf, format="PNG")
     buf.seek(0)
 
-    x_left = QR_LEFT_MM_BOTH if shifted else QR_LEFT_MM
-    y_top = QR_TOP_MM_BOTH if shifted else QR_TOP_MM
-    x_pt = _mm_to_pt(x_left)
-    y_pt = _y(y_top + QR_SIZE_MM)
-    size_pt = _mm_to_pt(QR_SIZE_MM)
     c.drawImage(
         ImageReader(buf),
-        x_pt, y_pt, width=size_pt, height=size_pt,
+        _mm_to_pt(QR_LEFT_MM), _y(QR_TOP_MM + QR_SIZE_MM),
+        width=_mm_to_pt(QR_SIZE_MM), height=_mm_to_pt(QR_SIZE_MM),
         preserveAspectRatio=True,
     )
 
 
-def _draw_id_digit_grid(c: canvas.Canvas) -> None:
+def _draw_id_digit_grid(c: canvas.Canvas, n_digits: int = ID_GRID_DIGIT_COUNT) -> None:
     """Draw a digit bubble grid for manual index number entry (right side of header)."""
     x0 = ID_GRID_LEFT_MM
     y0 = ID_GRID_TOP_MM
-    n = ID_GRID_DIGIT_COUNT
+    n = min(max(n_digits, 1), 10)
     r_pt = _mm_to_pt(ID_GRID_BUBBLE_DIAMETER_MM / 2)
 
     # Title label
@@ -137,6 +133,41 @@ def _wrap_text(text: str, max_chars: int = 50) -> list[str]:
     return lines or [text]
 
 
+def _draw_fillable_fields(
+    c: canvas.Canvas,
+    x_left_mm: float,
+    x_right_mm: float,
+    y_start_mm: float,
+) -> float:
+    """Draw Subject / Date / Registration Number fillable lines.
+    Returns the y_mm position below the last field."""
+    label_font_size = 8
+    line_w = 0.4
+    row_gap = 7.5  # mm between field rows
+
+    fields = [
+        ("Subject:", x_left_mm, x_right_mm, y_start_mm),
+        ("Date:", x_left_mm, x_left_mm + (x_right_mm - x_left_mm) * 0.45, y_start_mm + row_gap),
+        ("Reg. No:", x_left_mm + (x_right_mm - x_left_mm) * 0.52, x_right_mm, y_start_mm + row_gap),
+    ]
+
+    for label, lx, rx, fy in fields:
+        c.setFillColor(colors.black)
+        c.setFont("Helvetica-Bold", label_font_size)
+        c.drawString(_mm_to_pt(lx), _y(fy + 1.0), label)
+
+        # underline starting after the label text
+        label_w_pt = c.stringWidth(label, "Helvetica-Bold", label_font_size)
+        line_x0 = _mm_to_pt(lx) + label_w_pt + _mm_to_pt(1.5)
+        line_x1 = _mm_to_pt(rx)
+        line_y = _y(fy + 1.0) - 1.5  # slightly below baseline
+        c.setLineWidth(line_w)
+        c.setStrokeColor(colors.black)
+        c.line(line_x0, line_y, line_x1, line_y)
+
+    return y_start_mm + row_gap + 6
+
+
 def _draw_header(
     c: canvas.Canvas,
     exam_title: str,
@@ -161,33 +192,37 @@ def _draw_header(
             c.drawCentredString(center_x, _y(top_y + 13 + i * title_line_h_mm), line)
         extra = (len(title_lines) - 1) * title_line_h_mm
 
-        c.setFont("Helvetica", 8)
-        c.drawCentredString(center_x, _y(top_y + 21 + extra), f"Date: {exam_date}")
-        c.setFont("Helvetica-Oblique", 7)
-        c.drawCentredString(center_x, _y(top_y + 32 + extra), "Fill all digit positions in the grid")
-
-        sep_y = top_y + 45 + extra
+        fields_end_y = _draw_fillable_fields(
+            c, HEADER_LEFT_MM, 120.0, top_y + 21 + extra
+        )
+        sep_y = max(fields_end_y, top_y + 45 + extra)
         c.setLineWidth(0.5)
         c.line(_mm_to_pt(HEADER_LEFT_MM), _y(sep_y), _mm_to_pt(HEADER_RIGHT_MM), _y(sep_y))
     else:
-        c.setFont("Helvetica-Bold", 14)
-        c.drawCentredString(PAGE_WIDTH / 2, _y(HEADER_TOP_MM), "SRI LANKA MEDICAL COUNCIL")
+        # Left-pane layout mirroring grid_mode — QR occupies the right pane
+        center_x = _mm_to_pt(75)  # centre of left pane (25–125mm)
+        top_y = QR_TOP_MM  # align with QR top
 
         c.setFont("Helvetica-Bold", 11)
+        c.drawCentredString(center_x, _y(top_y + 5), "SRI LANKA MEDICAL COUNCIL")
+
+        c.setFont("Helvetica-Bold", 9)
         for i, line in enumerate(title_lines):
-            c.drawCentredString(PAGE_WIDTH / 2, _y(HEADER_TOP_MM + 7 + i * title_line_h_mm), line)
+            c.drawCentredString(center_x, _y(top_y + 13 + i * title_line_h_mm), line)
         extra = (len(title_lines) - 1) * title_line_h_mm
 
-        c.setFont("Helvetica", 10)
-        y_detail = _y(HEADER_TOP_MM + 14 + extra)
-        c.drawString(_mm_to_pt(HEADER_LEFT_MM), y_detail, f"Index No: {index_number}")
-        c.drawString(_mm_to_pt(120), y_detail, f"Date: {exam_date}")
+        # Pre-printed index number (personalised sheet)
+        if index_number:
+            c.setFont("Helvetica-Oblique", 8)
+            c.drawCentredString(center_x, _y(top_y + 20 + extra), f"Index No: {index_number}")
+            fields_start_y = top_y + 26 + extra
+        else:
+            fields_start_y = top_y + 21 + extra
 
+        fields_end_y = _draw_fillable_fields(c, HEADER_LEFT_MM, 120.0, fields_start_y)
+        sep_y = max(fields_end_y, top_y + 45 + extra)
         c.setLineWidth(0.5)
-        c.line(
-            _mm_to_pt(HEADER_LEFT_MM), _y(HEADER_TOP_MM + 20 + extra),
-            _mm_to_pt(HEADER_RIGHT_MM), _y(HEADER_TOP_MM + 20 + extra),
-        )
+        c.line(_mm_to_pt(HEADER_LEFT_MM), _y(sep_y), _mm_to_pt(HEADER_RIGHT_MM), _y(sep_y))
 
 
 def _draw_bubble(c: canvas.Canvas, cx_mm: float, cy_mm: float, filled: bool = False) -> None:
@@ -360,6 +395,7 @@ def generate_sheet(
     type1_questions: list[dict],
     type2_questions: list[dict],
     id_mode: str = "qr",
+    digit_count: int = ID_GRID_DIGIT_COUNT,
 ) -> bytes:
     """Generate a single OMR answer sheet PDF and return as bytes.
 
@@ -376,10 +412,10 @@ def generate_sheet(
     if id_mode == "qr":
         _draw_qr(c, exam_id, index_number)
     elif id_mode == "both":
-        _draw_qr(c, exam_id, index_number, shifted=True)
-        _draw_id_digit_grid(c)
+        _draw_qr(c, exam_id, index_number)
+        _draw_id_digit_grid(c, digit_count)
     elif id_mode == "bubble_grid":
-        _draw_id_digit_grid(c)
+        _draw_id_digit_grid(c, digit_count)
 
     header_index = index_number if id_mode != "bubble_grid" else ""
     _draw_header(c, exam_title, header_index, exam_date, grid_mode=(id_mode == "bubble_grid"))
@@ -404,6 +440,7 @@ def generate_batch_pdf(
     type1_questions: list[dict],
     type2_questions: list[dict],
     id_mode: str = "qr",
+    digit_count: int = ID_GRID_DIGIT_COUNT,
 ) -> bytes:
     """Generate a multi-page PDF with one sheet per index number.
 
@@ -424,10 +461,10 @@ def generate_batch_pdf(
         if id_mode == "qr":
             _draw_qr(c, exam_id, index_number)
         elif id_mode == "both":
-            _draw_qr(c, exam_id, index_number, shifted=True)
-            _draw_id_digit_grid(c)
+            _draw_qr(c, exam_id, index_number)
+            _draw_id_digit_grid(c, digit_count)
         elif id_mode == "bubble_grid":
-            _draw_id_digit_grid(c)
+            _draw_id_digit_grid(c, digit_count)
 
         header_index = index_number if id_mode != "bubble_grid" else ""
         _draw_header(c, exam_title, header_index, exam_date, grid_mode=(id_mode == "bubble_grid"))

@@ -60,10 +60,8 @@ export const examsApi = {
 
   generateSheets: (examId: string, idMode: string, csvFile?: File) => {
     const form = new FormData();
-    form.append("id_mode", idMode);
     if (csvFile) form.append("csv_file", csvFile);
-    return apiClient.post(`/exams/${examId}/sheets/generate`, form, {
-      headers: { "Content-Type": "multipart/form-data" },
+    return apiClient.post(`/exams/${examId}/sheets/generate?id_mode=${idMode}`, form, {
       responseType: "blob",
     });
   },

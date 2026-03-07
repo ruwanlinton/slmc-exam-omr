@@ -1,7 +1,7 @@
 import csv
 import io
 from typing import Optional
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Query
 from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
@@ -17,8 +17,8 @@ router = APIRouter()
 @router.post("/exams/{exam_id}/sheets/generate")
 async def generate_sheets(
     exam_id: str,
-    id_mode: str = Form("qr", description="'qr' | 'bubble_grid' | 'both'"),
-    csv_file: Optional[UploadFile] = File(None, description="CSV with index_number column (not required for bubble_grid mode)"),
+    id_mode: str = Query("qr", description="'qr' | 'bubble_grid' | 'both'"),
+    csv_file: Optional[UploadFile] = File(None),
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):

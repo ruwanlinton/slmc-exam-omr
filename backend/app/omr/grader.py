@@ -18,12 +18,13 @@ def grade_type2(
 ) -> float:
     """
     Type 2: 0.2 points per correct sub-option (A-E), max 1.0 per question.
-    Sub-options not in detected_answers are treated as False.
+    Sub-options not filled (None) are treated as unanswered and score 0,
+    even if the correct answer is False.
     """
     score = 0.0
     for opt, correct_val in correct_sub_options.items():
-        detected_val = detected_answers.get(opt, False)
-        if detected_val == correct_val:
+        detected_val = detected_answers.get(opt)  # None if absent or unanswered
+        if detected_val is not None and detected_val == correct_val:
             score += 0.2
     return round(min(score, 1.0), 4)
 

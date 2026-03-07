@@ -138,7 +138,7 @@ def detect_type2_answers(
             elif t_filled and f_filled:
                 q_answers[opt] = t_ratio >= f_ratio
             else:
-                q_answers[opt] = False
+                q_answers[opt] = None  # unanswered — not T, not F
 
         answers[str(q["question_number"])] = q_answers
 

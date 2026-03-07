@@ -112,14 +112,14 @@ function QuestionRow({ q }: { q: QuestionDetail }) {
           {OPTIONS.map((opt) => {
             const mv = marked[opt];
             const cv = correct[opt];
-            const subCorrect = mv === cv;
+            const subCorrect = mv != null && mv === cv;
             return (
               <div key={opt} style={styles.tfCell}>
                 <span style={styles.tfLabel}>{opt}</span>
                 <span style={{ ...styles.tfVal, ...(subCorrect ? styles.tfCorrect : styles.tfWrong) }}>
-                  {mv === undefined ? "—" : mv ? "T" : "F"}
+                  {mv == null ? "—" : mv ? "T" : "F"}
                 </span>
-                <span style={styles.tfExpected}>{cv === undefined ? "" : cv ? "T" : "F"}</span>
+                <span style={styles.tfExpected}>{cv == null ? "" : cv ? "T" : "F"}</span>
               </div>
             );
           })}

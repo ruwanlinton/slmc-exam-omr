@@ -126,8 +126,8 @@ export function ExamLayout({ children }: ExamLayoutProps) {
 
 const styles: Record<string, React.CSSProperties> = {
   examHeader: {
-    background: "#233654",
-    borderBottom: "1px solid rgba(255,255,255,0.1)",
+    background: "#fff",
+    borderBottom: "1px solid #e2e8f0",
     padding: "0 24px",
   },
   examHeaderInner: {
@@ -136,7 +136,7 @@ const styles: Record<string, React.CSSProperties> = {
     padding: "12px 0 10px",
   },
   backLink: {
-    color: "#b79a62",
+    color: "#718096",
     fontSize: 12,
     textDecoration: "none",
     fontWeight: 500,
@@ -151,7 +151,7 @@ const styles: Record<string, React.CSSProperties> = {
   examTitle: {
     fontSize: 18,
     fontWeight: 700,
-    color: "#fff",
+    color: "#233654",
     margin: 0,
   },
   statusBadge: {

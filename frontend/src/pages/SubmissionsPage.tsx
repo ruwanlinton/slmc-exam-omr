@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { Layout } from "../components/layout/Layout";
+import { ExamLayout } from "../components/layout/ExamLayout";
 import { submissionsApi, type Submission } from "../api/submissions";
 
 export function SubmissionsPage() {
@@ -54,8 +54,7 @@ export function SubmissionsPage() {
   };
 
   return (
-    <Layout>
-      <h1 style={styles.h1}>Submissions</h1>
+    <ExamLayout>
 
       <div style={styles.statsRow}>
         <StatBadge label="Total" value={submissions.length} color="#2d3748" bg="#e2e8f0" />
@@ -117,7 +116,7 @@ export function SubmissionsPage() {
           </tbody>
         </table>
       )}
-    </Layout>
+    </ExamLayout>
   );
 }
 
@@ -141,7 +140,6 @@ function statusBadge(status: string): React.CSSProperties {
 }
 
 const styles: Record<string, React.CSSProperties> = {
-  h1: { fontSize: 22, fontWeight: 700, color: "#1a365d", marginBottom: 16 },
   statsRow: { display: "flex", gap: 12, marginBottom: 20 },
   empty: { padding: "48px 0", textAlign: "center", color: "#718096" },
   table: { width: "100%", borderCollapse: "collapse", background: "#fff", borderRadius: 8, overflow: "hidden", boxShadow: "0 1px 4px rgba(0,0,0,0.08)" },

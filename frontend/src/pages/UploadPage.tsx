@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useParams } from "react-router-dom";
-import { Layout } from "../components/layout/Layout";
+import { ExamLayout } from "../components/layout/ExamLayout";
 import { DropZone } from "../components/upload/DropZone";
 import { submissionsApi, type BatchResult } from "../api/submissions";
 import { loadSettings } from "../settings";
@@ -101,8 +101,7 @@ export function UploadPage() {
   const pendingCount = files.filter((f) => f.status === "pending").length;
 
   return (
-    <Layout>
-      <h1 style={styles.h1}>Upload OMR Sheets</h1>
+    <ExamLayout>
 
       <div style={styles.settingsRow}>
         <label style={styles.digitLabel}>
@@ -160,7 +159,7 @@ export function UploadPage() {
           ))}
         </div>
       )}
-    </Layout>
+    </ExamLayout>
   );
 }
 
@@ -175,7 +174,6 @@ function statusStyle(status: string): React.CSSProperties {
 }
 
 const styles: Record<string, React.CSSProperties> = {
-  h1: { fontSize: 22, fontWeight: 700, color: "#1a365d", marginBottom: 24 },
   settingsRow: { background: "#fff", borderRadius: 8, padding: "14px 20px", marginBottom: 16, boxShadow: "0 1px 4px rgba(0,0,0,0.08)", display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap" as const },
   digitLabel: { display: "flex", alignItems: "center", gap: 8, fontSize: 13, fontWeight: 600, color: "#2d3748" },
   digitInput: { width: 56, padding: "4px 8px", border: "1px solid #cbd5e0", borderRadius: 4, fontSize: 14, textAlign: "center" as const, marginLeft: 4 },

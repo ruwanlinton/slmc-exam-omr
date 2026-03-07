@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { Layout } from "../components/layout/Layout";
+import { ExamLayout } from "../components/layout/ExamLayout";
 import { resultsApi, type ResultDetail, type QuestionDetail } from "../api/results";
 
 const PASS_MARK = 50;
@@ -22,7 +22,7 @@ export function ResultDetailPage() {
   const passed = detail ? detail.percentage >= PASS_MARK : false;
 
   return (
-    <Layout>
+    <ExamLayout>
       <div style={styles.breadcrumb}>
         <Link to={`/exams/${id}/results`} style={styles.backLink}>← Back to Results</Link>
       </div>
@@ -67,7 +67,7 @@ export function ResultDetailPage() {
           </div>
         </>
       )}
-    </Layout>
+    </ExamLayout>
   );
 }
 

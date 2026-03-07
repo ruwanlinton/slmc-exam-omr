@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
-import { Layout } from "../components/layout/Layout";
+import { useParams } from "react-router-dom";
+import { ExamLayout } from "../components/layout/ExamLayout";
 import { examsApi, type Exam, type Question, type AnswerKey } from "../api/exams";
 
 export function ExamDetailPage() {
@@ -60,8 +60,8 @@ export function ExamDetailPage() {
     alert("Answer key saved.");
   };
 
-  if (loading) return <Layout><p>Loading...</p></Layout>;
-  if (!exam) return <Layout><p>Exam not found.</p></Layout>;
+  if (loading) return <ExamLayout><p>Loading...</p></ExamLayout>;
+  if (!exam) return <ExamLayout><p>Exam not found.</p></ExamLayout>;
 
   const type1 = questions.filter((q) => q.question_type === "type1");
   const type2 = questions.filter((q) => q.question_type === "type2");
@@ -70,13 +70,12 @@ export function ExamDetailPage() {
     const ak = answerKeys.find((a) => a.question_id === q.id);
     if (!ak) return false;
     if (q.question_type === "type1") return !!ak.correct_option;
-    // type2: all 5 sub-options must be set (true or false, not null/undefined)
     const opts = ak.sub_options;
     return !!opts && ["A", "B", "C", "D", "E"].every((o) => opts[o] === true || opts[o] === false);
   });
 
   return (
-    <Layout>
+    <ExamLayout>
       <div style={styles.header}>
         {editing ? (
           <div style={styles.editRow}>
@@ -90,10 +89,7 @@ export function ExamDetailPage() {
             <button onClick={() => setEditing(false)} style={styles.cancelBtn}>Cancel</button>
           </div>
         ) : (
-          <>
-            <h1 style={styles.h1}>{exam.title}</h1>
-            <button onClick={() => setEditing(true)} style={styles.editBtn}>Edit</button>
-          </>
+          <button onClick={() => setEditing(true)} style={styles.editBtn}>Edit Exam</button>
         )}
       </div>
 
@@ -105,16 +101,9 @@ export function ExamDetailPage() {
 
       {!answerKeyComplete && questions.length > 0 && (
         <div style={styles.answerKeyWarning}>
-          Answer key is incomplete — fill all questions in the Answer Key section before uploading submissions or viewing results.
+          Answer key is incomplete — fill all questions below and save before uploading submissions or viewing results.
         </div>
       )}
-
-      <div style={styles.quickLinks}>
-        <Link to={`/exams/${id}/sheets`} style={styles.qBtn}>Generate Sheets</Link>
-        <QuickLink to={`/exams/${id}/upload`} enabled={answerKeyComplete}>Upload Submissions</QuickLink>
-        <QuickLink to={`/exams/${id}/submissions`} enabled={answerKeyComplete}>View Submissions</QuickLink>
-        <QuickLink to={`/exams/${id}/results`} enabled={answerKeyComplete}>Results</QuickLink>
-      </div>
 
       <div style={styles.section}>
         <h2 style={styles.h2}>Questions ({questions.length})</h2>
@@ -189,13 +178,8 @@ export function ExamDetailPage() {
           <button onClick={handleSaveAnswerKey} style={styles.saveAkBtn}>Save Answer Key</button>
         </div>
       )}
-    </Layout>
+    </ExamLayout>
   );
-}
-
-function QuickLink({ to, enabled, children }: { to: string; enabled: boolean; children: React.ReactNode }) {
-  if (enabled) return <Link to={to} style={styles.qBtn}>{children}</Link>;
-  return <span style={styles.qBtnDisabled} title="Complete the answer key first">{children}</span>;
 }
 
 function MetaItem({ label, value }: { label: string; value: string }) {
@@ -208,8 +192,7 @@ function MetaItem({ label, value }: { label: string; value: string }) {
 }
 
 const styles: Record<string, React.CSSProperties> = {
-  header: { display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 },
-  h1: { fontSize: 22, fontWeight: 700, color: "#233654" },
+  header: { display: "flex", alignItems: "center", justifyContent: "flex-end", marginBottom: 16 },
   h2: { fontSize: 16, fontWeight: 700, color: "#2d3748", marginBottom: 8 },
   editRow: { display: "flex", alignItems: "center", gap: 8, flex: 1 },
   titleInput: { flex: 1, padding: "6px 10px", border: "1px solid #e2e8f0", borderRadius: 6, fontSize: 16 },
@@ -219,9 +202,6 @@ const styles: Record<string, React.CSSProperties> = {
   editBtn: { padding: "6px 16px", background: "#edf2f7", color: "#2d3748", border: "none", borderRadius: 6, cursor: "pointer", fontSize: 13 },
   meta: { display: "flex", gap: 32, background: "#fff", borderRadius: 8, padding: "16px 24px", marginBottom: 16, boxShadow: "0 1px 4px rgba(0,0,0,0.08)" },
   answerKeyWarning: { background: "#fffbeb", border: "1px solid #f6d860", color: "#744210", borderRadius: 6, padding: "10px 16px", fontSize: 13, marginBottom: 16 },
-  quickLinks: { display: "flex", gap: 10, marginBottom: 24, flexWrap: "wrap" },
-  qBtn: { padding: "8px 16px", background: "#f5f0e8", color: "#ba3c3c", borderRadius: 6, textDecoration: "none", fontSize: 13, fontWeight: 600 },
-  qBtnDisabled: { padding: "8px 16px", background: "#f7fafc", color: "#a0aec0", borderRadius: 6, fontSize: 13, fontWeight: 600, cursor: "not-allowed" },
   section: { background: "#fff", borderRadius: 8, padding: 24, marginBottom: 16, boxShadow: "0 1px 4px rgba(0,0,0,0.08)" },
   hint: { fontSize: 13, color: "#718096", marginBottom: 12 },
   link: { color: "#ba3c3c" },

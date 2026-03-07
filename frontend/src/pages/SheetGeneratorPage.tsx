@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useParams } from "react-router-dom";
-import { Layout } from "../components/layout/Layout";
+import { ExamLayout } from "../components/layout/ExamLayout";
 import { examsApi } from "../api/exams";
 import { loadSettings } from "../settings";
 
@@ -54,8 +54,7 @@ export function SheetGeneratorPage() {
   const canGenerate = !generating && (needsCsv ? !!csvFile : true);
 
   return (
-    <Layout>
-      <h1 style={styles.h1}>Generate OMR Sheets</h1>
+    <ExamLayout>
 
       <div style={styles.card}>
         {/* Mode selection */}
@@ -155,12 +154,11 @@ export function SheetGeneratorPage() {
             : "Generate & Download PDF"}
         </button>
       </div>
-    </Layout>
+    </ExamLayout>
   );
 }
 
 const styles: Record<string, React.CSSProperties> = {
-  h1: { fontSize: 22, fontWeight: 700, color: "#233654", marginBottom: 24 },
   card: { background: "#fff", borderRadius: 8, padding: 32, maxWidth: 620, boxShadow: "0 1px 4px rgba(0,0,0,0.08)", display: "flex", flexDirection: "column", gap: 24 },
   sectionLabel: { fontSize: 13, fontWeight: 700, color: "#233654", marginBottom: 10, textTransform: "uppercase", letterSpacing: "0.04em" },
   modeGroup: { display: "flex", flexDirection: "column", gap: 10 },

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { Layout } from "../components/layout/Layout";
+import { ExamLayout } from "../components/layout/ExamLayout";
 import { resultsApi, type Result, type ResultSummary } from "../api/results";
 import { ScoreChart } from "../components/results/ScoreChart";
 
@@ -33,9 +33,8 @@ export function ResultsPage() {
   };
 
   return (
-    <Layout>
+    <ExamLayout>
       <div style={styles.header}>
-        <h1 style={styles.h1}>Results</h1>
         <div style={styles.exportBtns}>
           <button onClick={() => handleExport("csv")} style={styles.exportBtn}>Export CSV</button>
           <button onClick={() => handleExport("xlsx")} style={styles.exportBtn}>Export XLSX</button>
@@ -121,7 +120,7 @@ export function ResultsPage() {
           </div>
         </>
       )}
-    </Layout>
+    </ExamLayout>
   );
 }
 
@@ -136,8 +135,7 @@ function SummaryCard({ label, value, subtext }: { label: string; value: string |
 }
 
 const styles: Record<string, React.CSSProperties> = {
-  header: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 },
-  h1: { fontSize: 22, fontWeight: 700, color: "#1a365d" },
+  header: { display: "flex", justifyContent: "flex-end", alignItems: "center", marginBottom: 24 },
   h2: { fontSize: 16, fontWeight: 700, color: "#2d3748", marginBottom: 16 },
   exportBtns: { display: "flex", gap: 8 },
   exportBtn: { padding: "8px 16px", background: "#edf2f7", color: "#2d3748", border: "none", borderRadius: 6, cursor: "pointer", fontSize: 13, fontWeight: 600 },

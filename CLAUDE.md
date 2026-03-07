@@ -207,7 +207,7 @@ An exam always has **one question type** — never mixed.
 ## Known Gotchas
 
 1. **ReportLab BytesIO**: Always wrap with `ImageReader(buf)` before passing to `c.drawImage()` — raw BytesIO is not accepted.
-2. **ReportLab fill color**: `c.circle(..., fill=0)` still uses the current fill color for the outline background. Always call `c.setFillColor(colors.black)` before drawing text after bubbles.
+2. **ReportLab fill color**: `c.circle(..., fill=0)` still uses the current fill color for the outline background. Always call `c.setFillColor(colors.black)` before drawing text after bubbles. Every draw function that may be called after bubble-drawing functions must reset fill color at its start — `_draw_header()` includes this guard.
 3. **uvicorn not in PATH**: Background shells don't load zsh profile. Use `.venv/bin/uvicorn` explicitly.
 4. **node not in PATH**: Same issue. Use full path `/opt/homebrew/Cellar/node/25.7.0/bin/node` or prepend to PATH.
 5. **id_mode as query param**: Was originally a Form field but multipart parsing was unreliable when no file was attached. Changed to query parameter — keep it that way.

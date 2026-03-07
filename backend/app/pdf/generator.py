@@ -119,6 +119,7 @@ def _draw_id_digit_grid(c: canvas.Canvas) -> None:
 
 
 def _draw_header(c: canvas.Canvas, exam_title: str, index_number: str, exam_date: str) -> None:
+    c.setFillColor(colors.black)
     c.setFont("Helvetica-Bold", 14)
     c.drawCentredString(
         PAGE_WIDTH / 2,

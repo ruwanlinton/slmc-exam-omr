@@ -42,6 +42,10 @@ HEADER_RIGHT_MM = PAGE_W_MM - 25.0
 BUBBLE_DIAMETER_MM = 4.5
 BUBBLE_SPACING_MM = 7.0   # center-to-center spacing
 
+# Section B-specific bubble sizing (smaller to fit 60 questions on one page)
+SECTION_B_BUBBLE_DIAMETER_MM = 3.5
+SECTION_B_BUBBLE_SPACING_MM = 5.0
+
 # Section A (Type 1: single best answer A-E)
 SECTION_A_TOP_MM = 90.0
 SECTION_A_LEFT_MM = 25.0
@@ -53,8 +57,10 @@ OPTIONS_TYPE1 = ["A", "B", "C", "D", "E"]
 # Section B (Type 2: True/False per sub-option A-E)
 SECTION_B_TOP_MM = None  # computed dynamically based on number of type1 questions
 SECTION_B_LEFT_MM = 25.0
-SECTION_B_COL2_LEFT_MM = 115.0
-SECTION_B_BLOCK_HEIGHT_MM = 22.0  # height of one Type2 question block (2 rows T/F)
+SECTION_B_COL2_LEFT_MM = 65.0
+SECTION_B_COL3_LEFT_MM = 105.0
+SECTION_B_COL4_LEFT_MM = 145.0
+SECTION_B_BLOCK_HEIGHT_MM = 12.0   # height of one Type2 question block (2 rows T/F)
 SECTION_B_ROW_LABELS = ["T", "F"]
 OPTIONS_TYPE2 = ["A", "B", "C", "D", "E"]
 

@@ -7,7 +7,7 @@ interface LayoutProps {
 
 export function Layout({ children }: LayoutProps) {
   return (
-    <div style={{ minHeight: "100vh", background: "#f7fafc" }}>
+    <div style={{ minHeight: "100vh", background: "#f2ede4", fontFamily: "Roboto, sans-serif" }}>
       <Navbar />
       <main style={{ maxWidth: 1100, margin: "0 auto", padding: "32px 24px" }}>
         {children}

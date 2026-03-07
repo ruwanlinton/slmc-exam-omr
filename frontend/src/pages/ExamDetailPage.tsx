@@ -104,7 +104,7 @@ export function ExamDetailPage() {
       <div style={styles.section}>
         <h2 style={styles.h2}>Questions ({questions.length})</h2>
         <p style={styles.hint}>
-          Type 1: {type1.length} questions | Type 2: {type2.length} questions
+          Question type: {type1.length > 0 ? "Type 1 — Single Best Answer" : "Type 2 — Extended True/False"}
         </p>
         {questions.length === 0 && (
           <Link to={`/exams/new`} style={styles.link}>No questions yet — recreate with questions.</Link>
@@ -189,20 +189,20 @@ function MetaItem({ label, value }: { label: string; value: string }) {
 
 const styles: Record<string, React.CSSProperties> = {
   header: { display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 },
-  h1: { fontSize: 22, fontWeight: 700, color: "#1a365d" },
+  h1: { fontSize: 22, fontWeight: 700, color: "#233654" },
   h2: { fontSize: 16, fontWeight: 700, color: "#2d3748", marginBottom: 8 },
   editRow: { display: "flex", alignItems: "center", gap: 8, flex: 1 },
   titleInput: { flex: 1, padding: "6px 10px", border: "1px solid #e2e8f0", borderRadius: 6, fontSize: 16 },
   select: { padding: "6px 10px", border: "1px solid #e2e8f0", borderRadius: 6, fontSize: 14 },
-  saveBtn: { padding: "6px 16px", background: "#2b6cb0", color: "#fff", border: "none", borderRadius: 6, cursor: "pointer", fontSize: 13 },
-  cancelBtn: { padding: "6px 16px", background: "#e2e8f0", color: "#2d3748", border: "none", borderRadius: 6, cursor: "pointer", fontSize: 13 },
+  saveBtn: { padding: "6px 16px", background: "#ba3c3c", color: "#fff", border: "none", borderRadius: 6, cursor: "pointer", fontSize: 13 },
+  cancelBtn: { padding: "6px 16px", background: "#e8e0d0", color: "#2d3748", border: "none", borderRadius: 6, cursor: "pointer", fontSize: 13 },
   editBtn: { padding: "6px 16px", background: "#edf2f7", color: "#2d3748", border: "none", borderRadius: 6, cursor: "pointer", fontSize: 13 },
   meta: { display: "flex", gap: 32, background: "#fff", borderRadius: 8, padding: "16px 24px", marginBottom: 16, boxShadow: "0 1px 4px rgba(0,0,0,0.08)" },
   quickLinks: { display: "flex", gap: 10, marginBottom: 24, flexWrap: "wrap" },
-  qBtn: { padding: "8px 16px", background: "#ebf8ff", color: "#2b6cb0", borderRadius: 6, textDecoration: "none", fontSize: 13, fontWeight: 600 },
+  qBtn: { padding: "8px 16px", background: "#f5f0e8", color: "#ba3c3c", borderRadius: 6, textDecoration: "none", fontSize: 13, fontWeight: 600 },
   section: { background: "#fff", borderRadius: 8, padding: 24, marginBottom: 16, boxShadow: "0 1px 4px rgba(0,0,0,0.08)" },
   hint: { fontSize: 13, color: "#718096", marginBottom: 12 },
-  link: { color: "#2b6cb0" },
+  link: { color: "#ba3c3c" },
   table: { width: "100%", borderCollapse: "collapse" },
   th: { padding: "10px 12px", textAlign: "left", fontSize: 12, fontWeight: 600, color: "#718096", borderBottom: "1px solid #e2e8f0" },
   tr: { borderBottom: "1px solid #f7fafc" },
@@ -211,5 +211,5 @@ const styles: Record<string, React.CSSProperties> = {
   t2row: { display: "flex", gap: 8, flexWrap: "wrap" },
   t2label: { display: "flex", alignItems: "center", gap: 4, fontSize: 12 },
   t2Select: { padding: "2px 6px", border: "1px solid #e2e8f0", borderRadius: 4, fontSize: 12 },
-  saveAkBtn: { marginTop: 16, padding: "8px 20px", background: "#2b6cb0", color: "#fff", border: "none", borderRadius: 6, cursor: "pointer", fontSize: 13, fontWeight: 600 },
+  saveAkBtn: { marginTop: 16, padding: "8px 20px", background: "#ba3c3c", color: "#fff", border: "none", borderRadius: 6, cursor: "pointer", fontSize: 13, fontWeight: 600 },
 };

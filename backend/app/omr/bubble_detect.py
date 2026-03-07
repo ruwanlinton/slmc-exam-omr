@@ -6,7 +6,8 @@ from typing import Optional
 from app.pdf.layout_constants import (
     BUBBLE_DIAMETER_MM, BUBBLE_SPACING_MM,
     SECTION_A_TOP_MM, SECTION_A_LEFT_MM, SECTION_A_COL2_LEFT_MM, SECTION_A_COL3_LEFT_MM, SECTION_A_ROW_HEIGHT_MM,
-    SECTION_B_LEFT_MM, SECTION_B_COL2_LEFT_MM, SECTION_B_BLOCK_HEIGHT_MM,
+    SECTION_B_LEFT_MM, SECTION_B_COL2_LEFT_MM, SECTION_B_COL3_LEFT_MM, SECTION_B_COL4_LEFT_MM, SECTION_B_BLOCK_HEIGHT_MM,
+    SECTION_B_BUBBLE_DIAMETER_MM, SECTION_B_BUBBLE_SPACING_MM,
     OPTIONS_TYPE1, OPTIONS_TYPE2, SECTION_B_ROW_LABELS,
     mm_to_px,
 )
@@ -93,34 +94,37 @@ def detect_type2_answers(
     type2_questions: list[dict],
     fill_threshold: float = 0.50,
     section_b_top_mm: float = 185.0,
-    questions_per_col: int = 15,
 ) -> dict[str, dict[str, bool]]:
     """
-    Detect filled T/F bubbles for Type 2 questions.
+    Detect filled T/F bubbles for Type 2 questions (3-column layout).
     Returns {question_number_str: {A: bool, B: bool, C: bool, D: bool, E: bool}}.
     """
-    r_px = mm_to_px(BUBBLE_DIAMETER_MM / 2)
-    col_starts = [SECTION_B_LEFT_MM, SECTION_B_COL2_LEFT_MM]
+    import math
+
+    if not type2_questions:
+        return {}
+
+    r_px = mm_to_px(SECTION_B_BUBBLE_DIAMETER_MM / 2)
+    questions_per_col = min(math.ceil(len(type2_questions) / 4), 15)
+    col_starts = [SECTION_B_LEFT_MM, SECTION_B_COL2_LEFT_MM, SECTION_B_COL3_LEFT_MM, SECTION_B_COL4_LEFT_MM]
     answers = {}
 
     for i, q in enumerate(type2_questions):
-        col = 0 if i < questions_per_col else 1
-        row = i if i < questions_per_col else i - questions_per_col
+        col = min(i // questions_per_col, 3)
+        row = i % questions_per_col
 
         x_start = col_starts[col]
-        y_top = section_b_top_mm + 5 + row * SECTION_B_BLOCK_HEIGHT_MM
+        y_top = section_b_top_mm + 8 + row * SECTION_B_BLOCK_HEIGHT_MM
 
         q_answers = {}
         for j, opt in enumerate(OPTIONS_TYPE2):
-            cx_px = _mm_cx(x_start, j)
-            # T row
-            t_cy_px = mm_to_px(y_top + 6)
+            cx_px = mm_to_px(x_start + 10 + j * SECTION_B_BUBBLE_SPACING_MM)
+            # T row at y_top + 2.5, F row at y_top + 6.5
+            t_cy_px = mm_to_px(y_top + 2.5)
             t_ratio = _fill_ratio(img_gray, cx_px, t_cy_px, r_px)
-            # F row
-            f_cy_px = mm_to_px(y_top + 16)
+            f_cy_px = mm_to_px(y_top + 6.5)
             f_ratio = _fill_ratio(img_gray, cx_px, f_cy_px, r_px)
 
-            # If T is filled and F is not, answer is True; vice versa
             t_filled = t_ratio >= fill_threshold
             f_filled = f_ratio >= fill_threshold
 
@@ -129,10 +133,8 @@ def detect_type2_answers(
             elif f_filled and not t_filled:
                 q_answers[opt] = False
             elif t_filled and f_filled:
-                # Ambiguous: take the one with higher ratio
                 q_answers[opt] = t_ratio >= f_ratio
             else:
-                # Neither filled — default to False (unanswered)
                 q_answers[opt] = False
 
         answers[str(q["question_number"])] = q_answers

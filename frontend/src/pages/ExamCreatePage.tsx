@@ -11,18 +11,13 @@ interface MetaForm {
   status: string;
 }
 
-interface QRow {
-  question_number: number;
-  question_type: "type1" | "type2";
-}
-
 export function ExamCreatePage() {
   const navigate = useNavigate();
   const [step, setStep] = useState<Step>("metadata");
   const [examId, setExamId] = useState<string | null>(null);
   const [meta, setMeta] = useState<MetaForm>({ title: "", exam_date: "", status: "draft" });
-  const [numType1, setNumType1] = useState(0);
-  const [numType2, setNumType2] = useState(0);
+  const [questionType, setQuestionType] = useState<"type1" | "type2">("type1");
+  const [questionCount, setQuestionCount] = useState(0);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
@@ -51,15 +46,12 @@ export function ExamCreatePage() {
     setSaving(true);
     setError("");
     try {
-      const questions: QuestionCreate[] = [];
-      for (let i = 1; i <= numType1; i++) {
-        questions.push({ question_number: i, question_type: "type1" });
-      }
-      for (let i = numType1 + 1; i <= numType1 + numType2; i++) {
-        questions.push({ question_number: i, question_type: "type2" });
-      }
+      const questions: QuestionCreate[] = Array.from({ length: questionCount }, (_, i) => ({
+        question_number: i + 1,
+        question_type: questionType,
+      }));
       await examsApi.bulkCreateQuestions(examId, questions);
-      await examsApi.update(examId, { total_questions: numType1 + numType2 });
+      await examsApi.update(examId, { total_questions: questionCount });
       setStep("answer-key");
     } catch {
       setError("Failed to save questions.");
@@ -126,35 +118,29 @@ export function ExamCreatePage() {
 
       {step === "questions" && (
         <form onSubmit={handleQuestionsSubmit} style={styles.form}>
-          <p style={styles.hint}>
-            Type 1 = Single best answer (A–E). Type 2 = True/False per sub-option (A–E).
-          </p>
           <label style={styles.label}>
-            Number of Type 1 Questions
+            Question Type
+            <select
+              value={questionType}
+              onChange={(e) => setQuestionType(e.target.value as "type1" | "type2")}
+              style={styles.input}
+            >
+              <option value="type1">Type 1 — Single Best Answer (A–E)</option>
+              <option value="type2">Type 2 — Extended True/False (T/F per A–E)</option>
+            </select>
+          </label>
+          <label style={styles.label}>
+            Number of Questions
             <input
               type="number"
-              min={0}
+              min={1}
               max={200}
-              value={numType1}
-              onChange={(e) => setNumType1(Number(e.target.value))}
+              value={questionCount}
+              onChange={(e) => setQuestionCount(Number(e.target.value))}
               style={styles.input}
             />
           </label>
-          <label style={styles.label}>
-            Number of Type 2 Questions
-            <input
-              type="number"
-              min={0}
-              max={100}
-              value={numType2}
-              onChange={(e) => setNumType2(Number(e.target.value))}
-              style={styles.input}
-            />
-          </label>
-          <p style={{ color: "#718096", fontSize: 13 }}>
-            Total: {numType1 + numType2} questions
-          </p>
-          <button type="submit" disabled={saving || numType1 + numType2 === 0} style={styles.btn}>
+          <button type="submit" disabled={saving || questionCount === 0} style={styles.btn}>
             {saving ? "Saving..." : "Next: Answer Key"}
           </button>
         </form>
@@ -162,9 +148,7 @@ export function ExamCreatePage() {
 
       {step === "answer-key" && (
         <div style={styles.form}>
-          <p>
-            Questions created. You can set the answer key from the exam detail page.
-          </p>
+          <p>Questions created. You can set the answer key from the exam detail page.</p>
           <button onClick={handleFinish} style={styles.btn}>
             Go to Exam Detail
           </button>
@@ -175,24 +159,13 @@ export function ExamCreatePage() {
 }
 
 const styles: Record<string, React.CSSProperties> = {
-  h1: { fontSize: 24, fontWeight: 700, color: "#1a365d", marginBottom: 24 },
+  h1: { fontSize: 24, fontWeight: 700, color: "#233654", marginBottom: 24 },
   steps: { display: "flex", gap: 16, marginBottom: 32 },
-  step: { padding: "8px 16px", borderRadius: 6, background: "#e2e8f0", color: "#718096", fontSize: 13, fontWeight: 600 },
-  activeStep: { background: "#2b6cb0", color: "#fff" },
+  step: { padding: "8px 16px", borderRadius: 6, background: "#e8e0d0", color: "#718096", fontSize: 13, fontWeight: 600 },
+  activeStep: { background: "#ba3c3c", color: "#fff" },
   form: { background: "#fff", borderRadius: 8, padding: 32, maxWidth: 520, boxShadow: "0 1px 4px rgba(0,0,0,0.08)", display: "flex", flexDirection: "column", gap: 16 },
   label: { display: "flex", flexDirection: "column", gap: 6, fontSize: 14, fontWeight: 600, color: "#2d3748" },
   input: { padding: "8px 12px", border: "1px solid #e2e8f0", borderRadius: 6, fontSize: 14, fontWeight: 400 },
-  btn: {
-    padding: "10px 24px",
-    background: "#2b6cb0",
-    color: "#fff",
-    border: "none",
-    borderRadius: 6,
-    fontSize: 14,
-    fontWeight: 600,
-    cursor: "pointer",
-    alignSelf: "flex-start",
-  },
+  btn: { padding: "10px 24px", background: "#ba3c3c", color: "#fff", border: "none", borderRadius: 6, fontSize: 14, fontWeight: 600, cursor: "pointer", alignSelf: "flex-start" },
   error: { background: "#fff5f5", border: "1px solid #fc8181", color: "#c53030", padding: "10px 16px", borderRadius: 6, marginBottom: 16 },
-  hint: { color: "#718096", fontSize: 13 },
 };

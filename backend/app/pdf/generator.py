@@ -19,7 +19,8 @@ from .layout_constants import (
     HEADER_TOP_MM, HEADER_LEFT_MM, HEADER_RIGHT_MM,
     BUBBLE_DIAMETER_MM, BUBBLE_SPACING_MM,
     SECTION_A_TOP_MM, SECTION_A_LEFT_MM, SECTION_A_COL2_LEFT_MM, SECTION_A_COL3_LEFT_MM, SECTION_A_ROW_HEIGHT_MM,
-    SECTION_B_LEFT_MM, SECTION_B_COL2_LEFT_MM, SECTION_B_BLOCK_HEIGHT_MM,
+    SECTION_B_LEFT_MM, SECTION_B_COL2_LEFT_MM, SECTION_B_COL3_LEFT_MM, SECTION_B_COL4_LEFT_MM, SECTION_B_BLOCK_HEIGHT_MM,
+    SECTION_B_BUBBLE_DIAMETER_MM, SECTION_B_BUBBLE_SPACING_MM,
     SECTION_B_ROW_LABELS, OPTIONS_TYPE1, OPTIONS_TYPE2,
     PAGE_H_MM,
 )
@@ -179,9 +180,10 @@ def _draw_section_b(
     c: canvas.Canvas,
     type2_questions: list[dict],
     start_y_mm: float,
-    questions_per_col: int = 15,
 ) -> float:
-    """Draw Type 2 True/False grid. Returns y_mm below last block."""
+    """Draw Type 2 True/False grid in 3 columns. Returns y_mm below last block."""
+    import math
+
     c.setFont("Helvetica-Bold", 10)
     c.drawString(
         _mm_to_pt(SECTION_B_LEFT_MM),
@@ -189,41 +191,61 @@ def _draw_section_b(
         "SECTION B — Extended True/False (mark T or F for each sub-option)",
     )
 
-    col_starts = [SECTION_B_LEFT_MM, SECTION_B_COL2_LEFT_MM]
+    if not type2_questions:
+        return start_y_mm + 10
+
+    questions_per_col = min(math.ceil(len(type2_questions) / 4), 15)
+    col_starts = [SECTION_B_LEFT_MM, SECTION_B_COL2_LEFT_MM, SECTION_B_COL3_LEFT_MM, SECTION_B_COL4_LEFT_MM]
     block_h = SECTION_B_BLOCK_HEIGHT_MM
     bubble_r = BUBBLE_DIAMETER_MM / 2
+
+    b_r = SECTION_B_BUBBLE_DIAMETER_MM / 2
+    b_sp = SECTION_B_BUBBLE_SPACING_MM
+
+    # Draw A-E column headers once per column
+    header_y_mm = start_y_mm + 3
+    for col_x in col_starts:
+        for j, opt in enumerate(OPTIONS_TYPE2):
+            cx = col_x + 10 + j * b_sp
+            c.setFillColor(colors.black)
+            c.setFont("Helvetica-Bold", 7)
+            c.drawCentredString(_mm_to_pt(cx), _y(header_y_mm), opt)
 
     max_y_mm = start_y_mm
 
     for i, q in enumerate(type2_questions):
-        col = 0 if i < questions_per_col else 1
-        row = i if i < questions_per_col else i - questions_per_col
+        col = min(i // questions_per_col, 3)
+        row = i % questions_per_col
 
         x_start = col_starts[col]
-        y_top = start_y_mm + 5 + row * block_h
+        y_top = start_y_mm + 8 + row * block_h
 
         if y_top + block_h > max_y_mm:
             max_y_mm = y_top + block_h
 
         # Question number label
-        c.setFont("Helvetica-Bold", 8)
-        c.drawString(_mm_to_pt(x_start), _y(y_top + 4), f"Q{q['question_number']}")
+        c.setFillColor(colors.black)
+        c.setFont("Helvetica-Bold", 7)
+        c.drawString(_mm_to_pt(x_start), _y(y_top + 2), f"{int(q['question_number']):02d}.")
 
-        # Draw 2 rows (T, F) × 5 cols (A-E)
+        # Draw T and F rows (T at +2.5mm, F at +6.5mm within block)
         for ri, label in enumerate(SECTION_B_ROW_LABELS):
-            y_center = y_top + 6 + ri * 10
+            y_center = y_top + 2.5 + ri * 4.0
 
-            # Row label
-            c.setFont("Helvetica", 8)
-            c.drawRightString(_mm_to_pt(x_start + 7), _y(y_center + bubble_r), label)
+            # Row label (T or F)
+            c.setFillColor(colors.black)
+            c.setFont("Helvetica", 6)
+            c.drawRightString(_mm_to_pt(x_start + 6), _y(y_center + 1.0), label)
 
-            for j, opt in enumerate(OPTIONS_TYPE2):
-                cx = x_start + 10 + j * BUBBLE_SPACING_MM
-                _draw_bubble(c, cx, y_center)
-                if ri == 0:
-                    # Option label above T row only
-                    c.setFont("Helvetica", 6)
-                    c.drawCentredString(_mm_to_pt(cx), _y(y_top + 1), opt)
+            r_pt = _mm_to_pt(b_r)
+            for j in range(len(OPTIONS_TYPE2)):
+                cx_mm = x_start + 10 + j * b_sp
+                cx_pt = _mm_to_pt(cx_mm)
+                cy_pt = _y(y_center)
+                c.setFillColor(colors.white)
+                c.setStrokeColor(colors.black)
+                c.setLineWidth(0.4)
+                c.circle(cx_pt, cy_pt, r_pt, stroke=1, fill=0)
 
     return max_y_mm + 5
 

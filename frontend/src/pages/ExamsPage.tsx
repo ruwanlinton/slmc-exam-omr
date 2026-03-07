@@ -89,10 +89,10 @@ function badgeColor(status: string): React.CSSProperties {
 
 const styles: Record<string, React.CSSProperties> = {
   header: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 },
-  h1: { fontSize: 24, fontWeight: 700, color: "#1a365d" },
+  h1: { fontSize: 24, fontWeight: 700, color: "#233654" },
   createBtn: {
     padding: "10px 20px",
-    background: "#2b6cb0",
+    background: "#ba3c3c",
     color: "#fff",
     textDecoration: "none",
     borderRadius: 6,
@@ -101,15 +101,15 @@ const styles: Record<string, React.CSSProperties> = {
   },
   empty: { textAlign: "center", padding: "48px 0", color: "#718096" },
   table: { width: "100%", borderCollapse: "collapse", background: "#fff", borderRadius: 8, overflow: "hidden", boxShadow: "0 1px 4px rgba(0,0,0,0.08)" },
-  th: { padding: "12px 16px", textAlign: "left", fontSize: 12, fontWeight: 600, color: "#718096", background: "#f7fafc", borderBottom: "1px solid #e2e8f0" },
+  th: { padding: "12px 16px", textAlign: "left", fontSize: 12, fontWeight: 600, color: "#718096", background: "#f9f6f0", borderBottom: "1px solid #e2e8f0" },
   tr: { borderBottom: "1px solid #e2e8f0" },
   td: { padding: "12px 16px", fontSize: 14, color: "#2d3748" },
-  link: { color: "#2b6cb0", textDecoration: "none", fontWeight: 600 },
+  link: { color: "#ba3c3c", textDecoration: "none", fontWeight: 600 },
   badge: { padding: "2px 10px", borderRadius: 99, fontSize: 11, fontWeight: 700 },
   actionBtn: {
     padding: "4px 12px",
-    background: "#ebf8ff",
-    color: "#2b6cb0",
+    background: "#f5f0e8",
+    color: "#233654",
     border: "none",
     borderRadius: 4,
     cursor: "pointer",

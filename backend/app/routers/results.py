@@ -6,9 +6,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func
 
 from app.db.session import get_db
-from app.db.models import Exam, Result, User
+from app.db.models import Exam, Result, Submission, Question, AnswerKey, User
 from app.auth.jwt import get_current_user
-from app.schemas.submission import ResultOut, ResultSummary
+from app.schemas.submission import ResultOut, ResultSummary, ResultDetail, QuestionDetail
 from app.services.export_service import results_to_csv, results_to_xlsx
 
 router = APIRouter()
@@ -35,6 +35,79 @@ async def list_results(
         .order_by(Result.index_number)
     )
     return result.scalars().all()
+
+
+@router.get("/exams/{exam_id}/results/{index_number}/detail", response_model=ResultDetail)
+async def get_result_detail(
+    exam_id: str,
+    index_number: str,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Return per-question marked/correct/score breakdown for one candidate."""
+    await _get_exam_or_404(exam_id, db)
+
+    # Fetch result
+    res = await db.execute(
+        select(Result).where(Result.exam_id == exam_id, Result.index_number == index_number)
+    )
+    result = res.scalar_one_or_none()
+    if not result:
+        raise HTTPException(status_code=404, detail="Result not found")
+
+    # Fetch raw_answers from the most recent completed submission for this candidate
+    sub_res = await db.execute(
+        select(Submission)
+        .where(Submission.exam_id == exam_id, Submission.index_number == index_number, Submission.status == "completed")
+        .order_by(Submission.created_at.desc())
+        .limit(1)
+    )
+    submission = sub_res.scalar_one_or_none()
+    raw_answers = submission.raw_answers if submission else {}
+
+    # Fetch questions ordered by number
+    q_res = await db.execute(
+        select(Question).where(Question.exam_id == exam_id).order_by(Question.question_number)
+    )
+    questions = q_res.scalars().all()
+
+    # Fetch answer keys
+    question_ids = [q.id for q in questions]
+    ak_res = await db.execute(
+        select(AnswerKey).where(AnswerKey.question_id.in_(question_ids))
+    )
+    ak_by_qid = {ak.question_id: ak for ak in ak_res.scalars().all()}
+
+    type1_answers = (raw_answers or {}).get("type1", {})
+    type2_answers = (raw_answers or {}).get("type2", {})
+    question_scores = result.question_scores or {}
+
+    question_details = []
+    for q in questions:
+        q_num = str(q.question_number)
+        ak = ak_by_qid.get(q.id)
+
+        if q.question_type == "type1":
+            marked = type1_answers.get(q_num)
+            correct = ak.correct_option if ak else None
+        else:
+            marked = type2_answers.get(q_num)
+            correct = ak.sub_options if ak else None
+
+        question_details.append(QuestionDetail(
+            question_number=q.question_number,
+            question_type=q.question_type,
+            marked=marked,
+            correct=correct,
+            score=question_scores.get(q_num, 0.0),
+        ))
+
+    return ResultDetail(
+        index_number=index_number,
+        score=result.score,
+        percentage=result.percentage,
+        questions=question_details,
+    )
 
 
 @router.get("/exams/{exam_id}/results/summary", response_model=ResultSummary)

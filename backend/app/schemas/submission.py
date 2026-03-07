@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Optional
+from typing import Any, Optional
 from pydantic import BaseModel
 
 
@@ -30,6 +30,21 @@ class ResultOut(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class QuestionDetail(BaseModel):
+    question_number: int
+    question_type: str
+    marked: Optional[Any]   # str option for type1, {A:bool,...} for type2
+    correct: Optional[Any]  # str option for type1, {A:bool,...} for type2
+    score: float
+
+
+class ResultDetail(BaseModel):
+    index_number: str
+    score: float
+    percentage: float
+    questions: list[QuestionDetail]
 
 
 class ResultSummary(BaseModel):

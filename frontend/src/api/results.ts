@@ -12,6 +12,21 @@ export interface Result {
   updated_at: string;
 }
 
+export interface QuestionDetail {
+  question_number: number;
+  question_type: "type1" | "type2";
+  marked: string | Record<string, boolean> | null;
+  correct: string | Record<string, boolean> | null;
+  score: number;
+}
+
+export interface ResultDetail {
+  index_number: string;
+  score: number;
+  percentage: number;
+  questions: QuestionDetail[];
+}
+
 export interface ResultSummary {
   exam_id: string;
   total_candidates: number;
@@ -33,6 +48,9 @@ export const resultsApi = {
     apiClient.get<ResultSummary>(`/exams/${examId}/results/summary`, {
       params: { pass_mark: passMark },
     }),
+
+  detail: (examId: string, indexNumber: string) =>
+    apiClient.get<ResultDetail>(`/exams/${examId}/results/${encodeURIComponent(indexNumber)}/detail`),
 
   exportUrl: (examId: string, format: "csv" | "xlsx") =>
     `${API_BASE_URL}/api/v1/exams/${examId}/results/export?format=${format}`,

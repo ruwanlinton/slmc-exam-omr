@@ -16,6 +16,7 @@ import { SubmissionsPage } from "./pages/SubmissionsPage";
 import { ResultsPage } from "./pages/ResultsPage";
 import { ResultDetailPage } from "./pages/ResultDetailPage";
 import { SettingsPage } from "./pages/SettingsPage";
+import { ProfilePage } from "./pages/ProfilePage";
 
 export function App() {
   const { getAccessToken } = useAuthContext();
@@ -38,6 +39,7 @@ export function App() {
         <Route path="/exams/:id/results" element={<AuthGuard><ResultsPage /></AuthGuard>} />
         <Route path="/exams/:id/results/:indexNumber" element={<AuthGuard><ResultDetailPage /></AuthGuard>} />
         <Route path="/settings" element={<AuthGuard><SettingsPage /></AuthGuard>} />
+        <Route path="/profile" element={<AuthGuard><ProfilePage /></AuthGuard>} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>

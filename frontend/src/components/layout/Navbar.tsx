@@ -1,26 +1,43 @@
 import { useAuthContext } from "@asgardeo/auth-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 export function Navbar() {
   const { state, signOut, getBasicUserInfo } = useAuthContext();
   const navigate = useNavigate();
   const [displayName, setDisplayName] = useState<string>("");
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (state.isAuthenticated) {
       getBasicUserInfo().then((info) => {
-setDisplayName(info.displayName || info.givenName || info.username || "");
+        setDisplayName(info.displayName || info.givenName || info.username || "");
       }).catch(() => {
         setDisplayName(state.username || "");
       });
     }
   }, [state.isAuthenticated]);
 
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   const handleSignOut = async () => {
+    setMenuOpen(false);
     await signOut();
     navigate("/login");
   };
+
+  const initials = displayName
+    ? displayName.split(" ").map((w) => w[0]).slice(0, 2).join("").toUpperCase()
+    : "";
 
   return (
     <nav style={styles.nav}>
@@ -42,9 +59,35 @@ setDisplayName(info.displayName || info.givenName || info.username || "");
         <Link to="/exams" style={styles.link}>Exams</Link>
         <Link to="/settings" style={styles.link}>Settings</Link>
       </div>
-      <div style={styles.user}>
-        {displayName && <span style={styles.username}>{displayName}</span>}
-        <button onClick={handleSignOut} style={styles.signOutBtn}>Sign Out</button>
+      <div style={styles.user} ref={menuRef}>
+        <button
+          onClick={() => setMenuOpen((o) => !o)}
+          style={styles.avatarBtn}
+          aria-label="User menu"
+        >
+          <span style={styles.avatar}>{initials}</span>
+          {displayName && <span style={styles.displayName}>{displayName}</span>}
+          <span style={styles.chevron}>{menuOpen ? "▲" : "▼"}</span>
+        </button>
+
+        {menuOpen && (
+          <div style={styles.dropdown}>
+            <div style={styles.dropdownHeader}>
+              <span style={styles.dropdownName}>{displayName}</span>
+            </div>
+            <div style={styles.dropdownDivider} />
+            <Link
+              to="/profile"
+              style={styles.dropdownItem}
+              onClick={() => setMenuOpen(false)}
+            >
+              My Profile
+            </Link>
+            <button onClick={handleSignOut} style={styles.dropdownItemBtn}>
+              Sign Out
+            </button>
+          </div>
+        )}
       </div>
     </nav>
   );
@@ -82,16 +125,73 @@ const styles: Record<string, React.CSSProperties> = {
     transition: "color 0.2s",
     fontWeight: 500,
   },
-  user: { display: "flex", alignItems: "center", gap: 12 },
-  username: { fontSize: 13, color: "#b79a62", fontWeight: 500 },
-  signOutBtn: {
-    padding: "6px 14px",
+  user: { position: "relative" },
+  avatarBtn: {
+    display: "flex",
+    alignItems: "center",
+    gap: 8,
     background: "transparent",
-    border: "1px solid #b79a62",
-    color: "#b79a62",
-    borderRadius: 4,
+    border: "none",
     cursor: "pointer",
+    padding: "4px 8px",
+    borderRadius: 6,
+  },
+  avatar: {
+    width: 32,
+    height: 32,
+    borderRadius: "50%",
+    background: "#b79a62",
+    color: "#233654",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    fontSize: 12,
+    fontWeight: 700,
+    flexShrink: 0,
+  },
+  displayName: { fontSize: 13, color: "#b79a62", fontWeight: 500 },
+  chevron: { fontSize: 9, color: "#b79a62" },
+  dropdown: {
+    position: "absolute",
+    top: "calc(100% + 10px)",
+    right: 0,
+    background: "#fff",
+    borderRadius: 8,
+    boxShadow: "0 4px 16px rgba(0,0,0,0.18)",
+    minWidth: 180,
+    overflow: "hidden",
+    zIndex: 200,
+  },
+  dropdownHeader: {
+    padding: "12px 16px 10px",
+  },
+  dropdownName: {
     fontSize: 13,
+    fontWeight: 600,
+    color: "#2d3748",
+  },
+  dropdownDivider: {
+    borderTop: "1px solid #e2e8f0",
+    margin: "0",
+  },
+  dropdownItem: {
+    display: "block",
+    padding: "10px 16px",
+    fontSize: 13,
+    color: "#2d3748",
+    textDecoration: "none",
     fontWeight: 500,
+  },
+  dropdownItemBtn: {
+    display: "block",
+    width: "100%",
+    padding: "10px 16px",
+    fontSize: 13,
+    color: "#c53030",
+    fontWeight: 500,
+    background: "transparent",
+    border: "none",
+    textAlign: "left",
+    cursor: "pointer",
   },
 };

@@ -1,11 +1,13 @@
 import { useAuthContext } from "@asgardeo/auth-react";
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { usersApi } from "../api/users";
 
 export function Navbar() {
   const { state, signOut, getBasicUserInfo } = useAuthContext();
   const navigate = useNavigate();
   const [displayName, setDisplayName] = useState<string>("");
+  const [isAdmin, setIsAdmin] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -16,6 +18,7 @@ export function Navbar() {
       }).catch(() => {
         setDisplayName(state.username || "");
       });
+      usersApi.getProfile().then((r) => setIsAdmin(r.data.role === "admin")).catch(() => {});
     }
   }, [state.isAuthenticated]);
 
@@ -57,6 +60,7 @@ export function Navbar() {
       <div style={styles.links}>
         <Link to="/" style={styles.link}>Dashboard</Link>
         <Link to="/exams" style={styles.link}>Exams</Link>
+        {isAdmin && <Link to="/admin/users" style={styles.link}>Users</Link>}
         <Link to="/settings" style={styles.link}>Settings</Link>
       </div>
       <div style={styles.user} ref={menuRef}>

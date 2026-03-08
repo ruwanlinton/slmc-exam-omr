@@ -4,7 +4,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import get_settings
-from app.routers import exams, questions, answer_keys, sheets, submissions, results, users
+from app.routers import exams, questions, answer_keys, sheets, submissions, results, users, admin_users
 
 settings = get_settings()
 
@@ -39,6 +39,7 @@ app.include_router(sheets.router, prefix=prefix, tags=["sheets"])
 app.include_router(submissions.router, prefix=prefix, tags=["submissions"])
 app.include_router(results.router, prefix=prefix, tags=["results"])
 app.include_router(users.router, prefix=prefix, tags=["users"])
+app.include_router(admin_users.router, prefix=prefix, tags=["admin"])
 
 
 @app.get("/health")

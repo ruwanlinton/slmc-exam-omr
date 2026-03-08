@@ -10,6 +10,9 @@ class Settings(BaseSettings):
     FILL_THRESHOLD: float = 0.50
     MAX_UPLOAD_SIZE_MB: int = 20
     CORS_ORIGINS: list[str] = ["http://localhost:5173", "http://localhost:3000"]
+    # M2M app credentials for SCIM2 user management (client_credentials grant)
+    ASGARDEO_SCIM_CLIENT_ID: str = ""
+    ASGARDEO_SCIM_CLIENT_SECRET: str = ""
 
     class Config:
         env_file = ".env"
